@@ -1,5 +1,23 @@
 # Change Log
 
+## v0.2.0 - 視差背景系統 (2026-01-30)
+
+### 新增
+- `ParallaxBackground.ts` - 視差背景系統類別
+  - 多層背景管理
+  - TileSprite 無縫捲動
+  - 動態寬度支援 (EXPAND 模式)
+  - resize 自動調整
+- 背景圖片
+  - `bg_far.png` - 遠景星空 (speed: 0.1)
+  - `bg_mid.png` - 中景山脈 (speed: 0.6)
+
+### 技術細節
+- 使用 tilePositionX 實現無縫捲動
+- setScrollFactor(0) 固定背景於攝影機
+
+---
+
 ## v0.1.0 - 基礎遊戲框架 (2026-01-30)
 
 ### 新增
