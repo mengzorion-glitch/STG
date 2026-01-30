@@ -138,11 +138,11 @@ export class MainScene extends Phaser.Scene {
     // 設定怪物攻擊回呼
     this.monsterSystem.setAttackCallback((monster, type) => {
       if (type === 'circle') {
-        // 小怪: 8發環形
-        this.bulletSystem.fireCircle(monster.x, monster.y, 8);
+        // 小怪: 6發環形 (減少30%)
+        this.bulletSystem.fireCircle(monster.x, monster.y, 6);
       } else if (type === 'fan') {
-        // 中怪: 扇形 160度 8發
-        this.bulletSystem.fireFan(monster.x, monster.y, 160, 8);
+        // 中怪: 扇形 160度 6發 (減少30%)
+        this.bulletSystem.fireFan(monster.x, monster.y, 160, 6);
       } else if (type === 'boss_spiral') {
         // BOSS 螺旋彈幕
         this.bulletSystem.fireBossSpiral(monster.x, monster.y, this.bossSpiralAngle);

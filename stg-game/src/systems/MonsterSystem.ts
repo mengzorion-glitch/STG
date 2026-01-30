@@ -73,9 +73,12 @@ export class MonsterSystem {
 
   /**
    * 隨機生成怪物
+   * 小怪 65%，中怪 35% (中怪減少30%)
    */
   private spawnRandom(): void {
-    const def = MONSTER_DEFS[Math.floor(Math.random() * MONSTER_DEFS.length)];
+    const roll = Math.random();
+    // 65% 小怪，35% 中怪
+    const def = roll < 0.65 ? MONSTER_DEFS[0] : MONSTER_DEFS[1];
     this.spawn(def);
   }
 

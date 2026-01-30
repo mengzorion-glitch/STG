@@ -125,10 +125,10 @@ export class BulletSystem {
   }
 
   /**
-   * BOSS 技能1：螺旋彈幕 - 12發旋轉射出
+   * BOSS 技能1：螺旋彈幕 - 8發旋轉射出 (減少30%)
    */
   fireBossSpiral(x: number, y: number, angleOffset: number = 0): void {
-    const count = 12;
+    const count = 8;
     const step = (Math.PI * 2) / count;
     for (let i = 0; i < count; i++) {
       const angle = step * i + Phaser.Math.DegToRad(angleOffset);
@@ -137,10 +137,10 @@ export class BulletSystem {
   }
 
   /**
-   * BOSS 技能2：爆發彈幕 - 24發向四周爆發
+   * BOSS 技能2：爆發彈幕 - 17發向四周爆發 (減少30%)
    */
   fireBossBurst(x: number, y: number): void {
-    const count = 24;
+    const count = 17;
     const step = (Math.PI * 2) / count;
     for (let i = 0; i < count; i++) {
       this.fire(x, y, step * i, MOB_BULLET, 'monster');
@@ -155,7 +155,7 @@ export class BulletSystem {
     const baseAngle = Math.PI; // 向左
     const waveOffset = (waveIndex % 2 === 0) ? -20 : 20;
     const spreadDeg = 60;
-    const count = 8;
+    const count = 6;  // 減少30%
 
     const spreadRad = Phaser.Math.DegToRad(spreadDeg);
     const offsetRad = Phaser.Math.DegToRad(waveOffset);
