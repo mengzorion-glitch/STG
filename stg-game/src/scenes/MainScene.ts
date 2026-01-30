@@ -265,17 +265,14 @@ export class MainScene extends Phaser.Scene {
         if (dist < hitRadius) {
           const monsterX = monster.x;
           const monsterY = monster.y;
-          const monsterType = monster.getType();
           const killed = monster.takeDamage(bullet.getDamage());
           this.bulletSystem.removeBullet(bullet);
           // V0.6.0: 擊中敵人 +1 能量
           this.player.addEnergy(1);
           if (killed) {
             this.monsterSystem.removeMonster(monster);
-            // 中型怪物掉落道具
-            if (monsterType === 'medium') {
-              this.itemSystem.spawn(monsterX, monsterY, 'bullet_up');
-            }
+            // 所有怪物掉落道具
+            this.itemSystem.spawn(monsterX, monsterY, 'bullet_up');
           }
           break;
         }

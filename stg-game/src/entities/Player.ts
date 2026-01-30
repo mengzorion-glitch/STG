@@ -30,6 +30,7 @@ export class Player extends Phaser.GameObjects.Sprite {
 
   // 主砲彈數
   private bulletCount: number = 3;
+  private readonly MAX_BULLET_COUNT = 6;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     // 使用第一張 idle 圖片作為初始材質
@@ -261,7 +262,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   }
 
   addBulletCount(amount: number = 1): void {
-    this.bulletCount += amount;
+    this.bulletCount = Math.min(this.MAX_BULLET_COUNT, this.bulletCount + amount);
   }
   // #endregion
 }

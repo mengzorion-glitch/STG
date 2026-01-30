@@ -31,8 +31,8 @@ export class ItemSystem {
       const item = this.items[i];
       item.update(delta);
 
-      // 視野外剔除
-      if (item.x < -50) {
+      // 視野外剔除或過期消失
+      if (item.x < -50 || item.hasExpired()) {
         item.destroy();
         this.items.splice(i, 1);
       }
