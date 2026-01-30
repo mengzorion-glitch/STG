@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import { getUIAnchors } from '../config/GameConfig';
+import { ParallaxBackground } from '../systems/ParallaxBackground';
 
 /**
  * 主遊戲場景
  * V0.1.0: 基礎框架與輸入系統
+ * V0.2.0: 視差背景系統
  */
 export class MainScene extends Phaser.Scene {
   // #region 輸入系統
@@ -21,11 +23,26 @@ export class MainScene extends Phaser.Scene {
   private debugText!: Phaser.GameObjects.Text;
   // #endregion 除錯顯示
 
+  // #region 背景系統
+  private parallaxBg!: ParallaxBackground;
+  // #endregion 背景系統
+
   constructor() {
     super('MainScene');
   }
 
+  preload(): void {
+    // V0.2.0: 載入背景圖片
+    this.load.image('bg_far', 'images/bg_far.png');
+    this.load.image('bg_mid', 'images/bg_mid.png');
+  }
+
   create(): void {
+    // V0.2.0: 初始化視差背景 (最先建立，確保在最底層)
+    this.parallaxBg = new ParallaxBackground(this);
+    this.parallaxBg.addLayer('bg_far', 0.1, 0);  // 遠景，慢
+    this.parallaxBg.addLayer('bg_mid', 0.6, 1);  // 中景，中速
+
     this.setupInput();
     this.setupUI();
 
@@ -34,6 +51,9 @@ export class MainScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    // V0.2.0: 更新背景捲動
+    this.parallaxBg.update(delta);
+
     const input = this.getInputVector();
     this.updateDebugInfo(input, delta);
   }

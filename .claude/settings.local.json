@@ -12,7 +12,8 @@
       "Bash(git commit:*)",
       "Bash(node scripts/generate-cover.js:*)",
       "Bash(git push:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(node scripts/generate-backgrounds.js:*)"
     ]
   }
 }
