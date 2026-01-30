@@ -1,5 +1,30 @@
 # Change Log
 
+## v0.3.0 - 角色系統 (2026-01-30)
+
+### 新增
+- `Player.ts` - 玩家角色類別
+  - 狀態機 (idle/attack/hurt)
+  - 動畫系統 (獨立圖片組成動畫)
+  - 左鍵拖曳跟隨移動
+  - 畫面邊界限制
+  - 單位大小設定 (2 單位)
+- `AssetLoader.ts` - 資源載入輔助函式
+  - loadPlayerAssets() 批量載入角色圖片
+  - loadMonsterAssets() 預留怪物載入
+- 角色圖片 (player/player_{action}_{frame}.png)
+  - idle: 3 幀動畫
+  - attack: 2 幀動畫
+  - hurt: 1 幀動畫
+
+### 技術細節
+- 角色大小 = UNIT_SIZE × 2 = 216px
+- 移動速度 800px/s
+- 攻擊動畫 12fps，其他 8fps
+- 受傷動畫播放完畢自動回 idle
+
+---
+
 ## v0.2.0 - 視差背景系統 (2026-01-30)
 
 ### 新增

@@ -1,22 +1,19 @@
 import Phaser from 'phaser';
 import { getUIAnchors } from '../config/GameConfig';
 import { ParallaxBackground } from '../systems/ParallaxBackground';
+import { Player } from '../entities/Player';
+import { loadPlayerAssets } from '../utils/AssetLoader';
+import type { AnimationConfig } from '../utils/AssetLoader';
 
 /**
  * 主遊戲場景
  * V0.1.0: 基礎框架與輸入系統
  * V0.2.0: 視差背景系統
+ * V0.3.0: 角色系統
  */
 export class MainScene extends Phaser.Scene {
   // #region 輸入系統
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasd!: {
-    W: Phaser.Input.Keyboard.Key;
-    A: Phaser.Input.Keyboard.Key;
-    S: Phaser.Input.Keyboard.Key;
-    D: Phaser.Input.Keyboard.Key;
-  };
-  private touchTarget: Phaser.Math.Vector2 | null = null;
+  private isLeftDown: boolean = false;
   // #endregion 輸入系統
 
   // #region 除錯顯示
@@ -27,6 +24,15 @@ export class MainScene extends Phaser.Scene {
   private parallaxBg!: ParallaxBackground;
   // #endregion 背景系統
 
+  // #region 角色系統
+  private player!: Player;
+  private playerAnimConfig: AnimationConfig[] = [
+    { key: 'idle', frameCount: 3 },
+    { key: 'attack', frameCount: 2 },
+    { key: 'hurt', frameCount: 1 },
+  ];
+  // #endregion 角色系統
+
   constructor() {
     super('MainScene');
   }
@@ -35,6 +41,9 @@ export class MainScene extends Phaser.Scene {
     // V0.2.0: 載入背景圖片
     this.load.image('bg_far', 'images/bg_far.png');
     this.load.image('bg_mid', 'images/bg_mid.png');
+
+    // V0.3.0: 載入角色圖片
+    loadPlayerAssets(this, 'player', this.playerAnimConfig);
   }
 
   create(): void {
@@ -42,6 +51,14 @@ export class MainScene extends Phaser.Scene {
     this.parallaxBg = new ParallaxBackground(this);
     this.parallaxBg.addLayer('bg_far', 0.1, 0);  // 遠景，慢
     this.parallaxBg.addLayer('bg_mid', 0.6, 1);  // 中景，中速
+
+    // V0.3.0: 建立玩家角色 (畫面左側中央)
+    const frameConfig: { [key: string]: number } = {};
+    for (const anim of this.playerAnimConfig) {
+      frameConfig[anim.key] = anim.frameCount;
+    }
+    this.player = new Player(this, 300, this.scale.height / 2);
+    this.player.initAnimations(frameConfig);
 
     this.setupInput();
     this.setupUI();
@@ -54,8 +71,20 @@ export class MainScene extends Phaser.Scene {
     // V0.2.0: 更新背景捲動
     this.parallaxBg.update(delta);
 
-    const input = this.getInputVector();
-    this.updateDebugInfo(input, delta);
+    // V0.3.0: 更新角色
+    this.player.update(delta);
+
+    // 左鍵按住 = 攻擊狀態，否則 = idle
+    if (this.isLeftDown) {
+      this.player.setPlayerState('attack');
+    } else {
+      if (this.player.getState() === 'attack') {
+        this.player.setPlayerState('idle');
+      }
+    }
+
+    // 更新除錯資訊
+    this.updateDebugInfo(delta);
   }
 
   /**
@@ -63,8 +92,6 @@ export class MainScene extends Phaser.Scene {
    */
   private onResize(_gameSize: Phaser.Structs.Size): void {
     const anchors = getUIAnchors(this, 20);
-
-    // 更新除錯文字位置 (右上角)
     this.debugText.setPosition(anchors.topRight.x, anchors.topRight.y);
   }
 
@@ -72,7 +99,6 @@ export class MainScene extends Phaser.Scene {
   private setupUI(): void {
     const anchors = getUIAnchors(this, 20);
 
-    // 除錯文字 - 右上角
     this.debugText = this.add.text(anchors.topRight.x, anchors.topRight.y, '', {
       fontSize: '14px',
       color: '#00ff00',
@@ -85,87 +111,54 @@ export class MainScene extends Phaser.Scene {
 
   // #region 輸入處理
   private setupInput(): void {
-    // 鍵盤：方向鍵
-    this.cursors = this.input.keyboard!.createCursorKeys();
+    // 停用右鍵選單
+    this.input.mouse!.disableContextMenu();
 
-    // 鍵盤：WASD
-    this.wasd = {
-      W: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-      A: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-      S: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-      D: this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-    };
-
-    // 觸控拖曳
+    // 滑鼠/觸控：左鍵按下 = 移動 + 攻擊
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      this.touchTarget = new Phaser.Math.Vector2(pointer.x, pointer.y);
-    });
-
-    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (pointer.isDown && this.touchTarget) {
-        this.touchTarget.set(pointer.x, pointer.y);
+      if (pointer.leftButtonDown()) {
+        this.isLeftDown = true;
+        this.player.setTargetPosition(new Phaser.Math.Vector2(pointer.x, pointer.y));
+      }
+      if (pointer.rightButtonDown()) {
+        this.onRightClick();
       }
     });
 
-    this.input.on('pointerup', () => {
-      this.touchTarget = null;
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.isLeftDown && pointer.leftButtonDown()) {
+        this.player.setTargetPosition(new Phaser.Math.Vector2(pointer.x, pointer.y));
+      }
+    });
+
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (!pointer.leftButtonDown()) {
+        this.isLeftDown = false;
+        this.player.setTargetPosition(null);
+      }
     });
   }
 
   /**
-   * 取得正規化的輸入向量
-   * @returns {x, y} 範圍 -1 到 1
+   * 右鍵施放技能
    */
-  getInputVector(): Phaser.Math.Vector2 {
-    let dx = 0;
-    let dy = 0;
-
-    // 鍵盤輸入優先
-    if (this.cursors.left.isDown || this.wasd.A.isDown) dx = -1;
-    if (this.cursors.right.isDown || this.wasd.D.isDown) dx = 1;
-    if (this.cursors.up.isDown || this.wasd.W.isDown) dy = -1;
-    if (this.cursors.down.isDown || this.wasd.S.isDown) dy = 1;
-
-    // 如果沒有鍵盤輸入，檢查觸控
-    if (dx === 0 && dy === 0 && this.touchTarget) {
-      // 相對於畫面中心計算方向 (使用動態尺寸)
-      const centerX = this.scale.width / 2;
-      const centerY = this.scale.height / 2;
-      dx = this.touchTarget.x - centerX;
-      dy = this.touchTarget.y - centerY;
-
-      // 正規化
-      const length = Math.sqrt(dx * dx + dy * dy);
-      if (length > 10) {
-        dx /= length;
-        dy /= length;
-      } else {
-        dx = 0;
-        dy = 0;
-      }
-    }
-
-    // 對角線正規化
-    if (dx !== 0 && dy !== 0) {
-      const normalizer = 1 / Math.sqrt(2);
-      dx *= normalizer;
-      dy *= normalizer;
-    }
-
-    return new Phaser.Math.Vector2(dx, dy);
+  private onRightClick(): void {
+    // TODO: V0.6.0 施放技能
+    console.log('Right click - Skill cast');
   }
   // #endregion 輸入處理
 
   // #region 除錯 UI
-  private updateDebugInfo(input: Phaser.Math.Vector2, delta: number): void {
+  private updateDebugInfo(delta: number): void {
     const fps = Math.round(1000 / delta);
     const w = this.scale.width;
     const h = this.scale.height;
     const lines = [
       `FPS: ${fps}`,
       `Size: ${Math.round(w)}x${Math.round(h)}`,
-      `Input: (${input.x.toFixed(2)}, ${input.y.toFixed(2)})`,
-      `Touch: ${this.touchTarget ? 'Active' : 'None'}`,
+      `Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`,
+      `State: ${this.player.getState()}`,
+      `L-Click: ${this.isLeftDown ? 'Down' : 'Up'}`,
     ];
     this.debugText.setText(lines.join('\n'));
   }
