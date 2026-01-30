@@ -16,7 +16,8 @@
       "Bash(node scripts/generate-backgrounds.js:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(node scripts/generate-player.js:*)"
+      "Bash(node scripts/generate-player.js:*)",
+      "Bash(node scripts/generate-monsters.js:*)"
     ]
   }
 }
