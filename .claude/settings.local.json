@@ -9,7 +9,10 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(npm run dev:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node scripts/generate-cover.js:*)",
+      "Bash(git push:*)",
+      "Bash(gh run list:*)"
     ]
   }
 }
