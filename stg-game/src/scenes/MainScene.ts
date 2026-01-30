@@ -68,6 +68,12 @@ export class MainScene extends Phaser.Scene {
   private readonly ULT_FIRE_INTERVAL = 50;  // 發射間隔 (ms)
   private readonly ULT_ANGLE_STEP = 10;      // 每輪旋轉角度
   private readonly ULT_DIRECTIONS = 8;       // 8 方向
+
+  // BOSS 技能狀態
+  private bossSpiralAngle: number = 0;
+  private bossWaveTimer: number = 0;
+  private bossWaveCount: number = 0;
+  private isBossWaveActive: boolean = false;
   // #endregion V0.6.0
 
   constructor() {
@@ -85,6 +91,10 @@ export class MainScene extends Phaser.Scene {
     this.collisionCooldown = 0;
     this.ultAngle = 0;
     this.ultFireTimer = 0;
+    this.bossSpiralAngle = 0;
+    this.bossWaveTimer = 0;
+    this.bossWaveCount = 0;
+    this.isBossWaveActive = false;
   }
 
   preload(): void {
@@ -133,6 +143,18 @@ export class MainScene extends Phaser.Scene {
       } else if (type === 'fan') {
         // 中怪: 扇形 160度 8發
         this.bulletSystem.fireFan(monster.x, monster.y, 160, 8);
+      } else if (type === 'boss_spiral') {
+        // BOSS 螺旋彈幕
+        this.bulletSystem.fireBossSpiral(monster.x, monster.y, this.bossSpiralAngle);
+        this.bossSpiralAngle += 15;
+      } else if (type === 'boss_burst') {
+        // BOSS 爆發彈幕
+        this.bulletSystem.fireBossBurst(monster.x, monster.y);
+      } else if (type === 'boss_wave') {
+        // BOSS 波浪彈幕 - 啟動連續發射
+        this.isBossWaveActive = true;
+        this.bossWaveCount = 0;
+        this.bossWaveTimer = 0;
       }
     });
 
@@ -165,6 +187,29 @@ export class MainScene extends Phaser.Scene {
     // V0.4.0: 更新怪物
     this.monsterSystem.update(delta);
 
+    // BOSS 波浪彈幕更新
+    if (this.isBossWaveActive) {
+      this.bossWaveTimer += delta;
+      if (this.bossWaveTimer >= 150 && this.bossWaveCount < 5) {
+        this.bossWaveTimer = 0;
+        // 找到 BOSS 並發射波浪
+        const monsters = this.monsterSystem.getMonsters();
+        const boss = monsters.find(m => m.getType() === 'boss');
+        if (boss) {
+          this.bulletSystem.fireBossWave(boss.x, boss.y, this.bossWaveCount);
+        }
+        this.bossWaveCount++;
+        if (this.bossWaveCount >= 5) {
+          this.isBossWaveActive = false;
+        }
+      }
+    }
+
+    // 30秒後生成 BOSS
+    if (this.survivalTime >= 30 && !this.monsterSystem.hasBoss()) {
+      this.monsterSystem.spawnBoss();
+    }
+
     // V0.5.0: 更新子彈
     this.bulletSystem.update(delta);
 
@@ -174,7 +219,12 @@ export class MainScene extends Phaser.Scene {
     // 檢查道具拾取
     const pickedItem = this.itemSystem.checkPlayerPickup(this.player);
     if (pickedItem === 'bullet_up') {
-      this.player.addBulletCount(1);
+      if (this.player.isMaxBulletCount()) {
+        // 已達最大彈數，改為增加能量
+        this.player.addEnergy(50);
+      } else {
+        this.player.addBulletCount(1);
+      }
     }
 
     // V0.6.0: 大技能旋轉掃射

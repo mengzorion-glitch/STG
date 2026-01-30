@@ -29,7 +29,7 @@ export class Player extends Phaser.GameObjects.Sprite {
   private energyDrainTimer: number = 0;
 
   // 主砲彈數
-  private bulletCount: number = 3;
+  private bulletCount: number = 1;
   private readonly MAX_BULLET_COUNT = 6;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -259,6 +259,10 @@ export class Player extends Phaser.GameObjects.Sprite {
   // #region 主砲彈數
   getBulletCount(): number {
     return this.bulletCount;
+  }
+
+  isMaxBulletCount(): boolean {
+    return this.bulletCount >= this.MAX_BULLET_COUNT;
   }
 
   addBulletCount(amount: number = 1): void {

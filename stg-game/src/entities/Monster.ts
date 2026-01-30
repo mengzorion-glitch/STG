@@ -8,7 +8,8 @@ import type { MonsterDef } from '../data/MonsterData';
  * - 碰撞玩家造成傷害
  */
 // 攻擊回呼類型
-export type AttackCallback = (monster: Monster, type: 'circle' | 'fan') => void;
+export type AttackType = 'circle' | 'fan' | 'boss_spiral' | 'boss_burst' | 'boss_wave';
+export type AttackCallback = (monster: Monster, type: AttackType) => void;
 
 export class Monster extends Phaser.GameObjects.Sprite {
   private def: MonsterDef;
@@ -28,6 +29,10 @@ export class Monster extends Phaser.GameObjects.Sprite {
   private attackCallback: AttackCallback | null = null;
   private dashFanWaveCount: number = 0;   // dash停頓時發射波數
   private dashFanWaveTimer: number = 0;   // dash扇形波間隔計時
+
+  // BOSS 專用
+  private bossSkills: AttackType[] = ['boss_spiral', 'boss_burst', 'boss_wave'];
+  private bossTargetY: number = 0;        // BOSS 上下移動目標
 
   constructor(scene: Phaser.Scene, x: number, y: number, def: MonsterDef) {
     super(scene, x, y, `mob-${def.type}-0`);
@@ -50,6 +55,8 @@ export class Monster extends Phaser.GameObjects.Sprite {
     if (this.def.behavior === 'dash') {
       this.setNextDashTarget();
       this.isDashing = true;
+    } else if (this.def.behavior === 'boss') {
+      this.bossTargetY = this.y;
     }
   }
 
@@ -119,6 +126,9 @@ export class Monster extends Phaser.GameObjects.Sprite {
         break;
       case 'dash':
         this.updateDash(deltaSeconds);
+        break;
+      case 'boss':
+        this.updateBoss(deltaSeconds);
         break;
       default:
         // straight: 單純向左
@@ -197,6 +207,43 @@ export class Monster extends Phaser.GameObjects.Sprite {
     const moveAmount = Math.min(moveSpeed * deltaSeconds, dist);
     this.x += (dx / dist) * moveAmount;
     this.y += (dy / dist) * moveAmount;
+  }
+
+  /**
+   * BOSS 行為：停在右側，上下移動，隨機施放技能
+   */
+  private updateBoss(deltaSeconds: number): void {
+    const screenW = this.scene.scale.width;
+    const screenH = this.scene.scale.height;
+
+    // 進場：移動到右側 1/4 位置
+    const targetX = screenW * 0.75;
+    if (this.x > targetX) {
+      this.x -= this.def.speed * deltaSeconds;
+      if (this.x < targetX) this.x = targetX;
+    }
+
+    // 上下移動
+    const dy = this.bossTargetY - this.y;
+    if (Math.abs(dy) > 5) {
+      const moveY = Math.sign(dy) * this.def.speed * deltaSeconds;
+      this.y += moveY;
+    } else {
+      // 到達目標，設定新目標
+      const margin = this.displayHeight / 2 + 50;
+      this.bossTargetY = Phaser.Math.Between(margin, screenH - margin);
+    }
+
+    // 攻擊：每隔一段時間隨機施放技能
+    if (this.def.attackInterval > 0 && this.attackCallback) {
+      this.attackTimer += deltaSeconds * 1000;
+      if (this.attackTimer >= this.def.attackInterval) {
+        this.attackTimer = 0;
+        // 隨機選擇技能
+        const skill = this.bossSkills[Math.floor(Math.random() * this.bossSkills.length)];
+        this.attackCallback(this, skill);
+      }
+    }
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * 行為模式
  */
-export type BehaviorType = 'straight' | 'sine' | 'dash';
+export type BehaviorType = 'straight' | 'sine' | 'dash' | 'boss';
 
 /**
  * 怪物定義
@@ -45,6 +45,21 @@ export const MONSTER_DEFS: MonsterDef[] = [
     attackInterval: 0,     // 停頓時攻擊
   },
 ];
+
+/**
+ * BOSS 定義
+ */
+export const BOSS_DEF: MonsterDef = {
+  type: 'boss',
+  hp: 1000,
+  damage: 20,
+  speed: 50,
+  exp: 500,
+  unitSize: 8.0,
+  frameCount: 1,
+  behavior: 'boss',
+  attackInterval: 2000,  // 每2秒隨機施放技能
+};
 
 /**
  * 取得怪物定義

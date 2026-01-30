@@ -125,6 +125,49 @@ export class BulletSystem {
   }
 
   /**
+   * BOSS 技能1：螺旋彈幕 - 12發旋轉射出
+   */
+  fireBossSpiral(x: number, y: number, angleOffset: number = 0): void {
+    const count = 12;
+    const step = (Math.PI * 2) / count;
+    for (let i = 0; i < count; i++) {
+      const angle = step * i + Phaser.Math.DegToRad(angleOffset);
+      this.fire(x, y, angle, MOB_BULLET, 'monster');
+    }
+  }
+
+  /**
+   * BOSS 技能2：爆發彈幕 - 24發向四周爆發
+   */
+  fireBossBurst(x: number, y: number): void {
+    const count = 24;
+    const step = (Math.PI * 2) / count;
+    for (let i = 0; i < count; i++) {
+      this.fire(x, y, step * i, MOB_BULLET, 'monster');
+    }
+  }
+
+  /**
+   * BOSS 技能3：波浪彈幕 - 向左發射 5 波扇形
+   */
+  fireBossWave(x: number, y: number, waveIndex: number): void {
+    // 扇形向左，角度隨波數變化
+    const baseAngle = Math.PI; // 向左
+    const waveOffset = (waveIndex % 2 === 0) ? -20 : 20;
+    const spreadDeg = 60;
+    const count = 8;
+
+    const spreadRad = Phaser.Math.DegToRad(spreadDeg);
+    const offsetRad = Phaser.Math.DegToRad(waveOffset);
+    const startAngle = baseAngle + offsetRad - spreadRad / 2;
+    const step = count > 1 ? spreadRad / (count - 1) : 0;
+
+    for (let i = 0; i < count; i++) {
+      this.fire(x, y, startAngle + step * i, MOB_BULLET, 'monster');
+    }
+  }
+
+  /**
    * 取得玩家子彈
    */
   getPlayerBullets(): Bullet[] {

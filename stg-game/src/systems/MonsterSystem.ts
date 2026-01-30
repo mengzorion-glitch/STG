@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { Monster } from '../entities/Monster';
 import type { AttackCallback } from '../entities/Monster';
 import { Player } from '../entities/Player';
-import { MONSTER_DEFS } from '../data/MonsterData';
+import { MONSTER_DEFS, BOSS_DEF } from '../data/MonsterData';
 import type { MonsterDef } from '../data/MonsterData';
 
 /**
@@ -37,6 +37,13 @@ export class MonsterSystem {
           `monster/mob_${def.type}_${i}.png`
         );
       }
+    }
+    // 載入 BOSS 圖片
+    for (let i = 0; i < BOSS_DEF.frameCount; i++) {
+      scene.load.image(
+        `mob-${BOSS_DEF.type}-${i}`,
+        `monster/mob_${BOSS_DEF.type}_${i}.png`
+      );
     }
   }
 
@@ -111,6 +118,30 @@ export class MonsterSystem {
    */
   setSpawnInterval(ms: number): void {
     this.spawnInterval = ms;
+  }
+
+  /**
+   * 生成 BOSS
+   */
+  spawnBoss(): Monster {
+    const screenW = this.scene.scale.width;
+    const screenH = this.scene.scale.height;
+    const x = screenW + 200;  // 畫面右側外
+    const y = screenH / 2;    // 中央
+
+    const monster = new Monster(this.scene, x, y, BOSS_DEF);
+    if (this.attackCallback) {
+      monster.setAttackCallback(this.attackCallback);
+    }
+    this.monsters.push(monster);
+    return monster;
+  }
+
+  /**
+   * 檢查是否有 BOSS 存活
+   */
+  hasBoss(): boolean {
+    return this.monsters.some(m => m.getType() === 'boss' && m.isAlive());
   }
 
   /**
