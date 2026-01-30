@@ -51,8 +51,8 @@ export class Item extends Phaser.GameObjects.Sprite {
   }
 
   getRadius(): number {
-    // 使用較小的碰撞半徑，確保需要實際觸碰
-    return Math.min(this.displayWidth, this.displayHeight) / 4;
+    // 只有碰到正中心才能拾取
+    return 1;
   }
 
   hasExpired(): boolean {
