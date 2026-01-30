@@ -24,18 +24,18 @@
 
 ---
 
-## v0.0.0 - 專案環境建置
+## v0.0.0 - 專案環境建置 ✅
 > 📄 詳細步驟請參閱 [V0.0.0詳細步驟.md](./V0.0.0詳細步驟.md)
 
 ### 必要項目
-- [ ] Node.js 環境
-- [ ] Vite 專案初始化 (vanilla-ts 模板)
-- [ ] TypeScript 設定 (ES2020, strict mode)
-- [ ] Phaser 3 安裝 (^3.80.0)
-- [ ] 專案目錄結構 (scenes/, systems/, config/)
-- [ ] Git 初始化
-- [ ] GitHub Actions 自動部署 (.github/workflows/deploy.yml)
-- [ ] PWA 基礎設定 (manifest.json + Service Worker 生成腳本)
+- [x] Node.js 環境
+- [x] Vite 專案初始化 (vanilla-ts 模板)
+- [x] TypeScript 設定 (ES2020, strict mode)
+- [x] Phaser 3 安裝 (^3.80.0)
+- [x] 專案目錄結構 (scenes/, systems/, config/)
+- [x] Git 初始化
+- [x] GitHub Actions 自動部署 (.github/workflows/deploy.yml)
+- [x] PWA 基礎設定 (manifest.json + Service Worker 生成腳本)
 
 ---
 
