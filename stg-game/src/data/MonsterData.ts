@@ -39,7 +39,7 @@ export const MONSTER_DEFS: MonsterDef[] = [
     damage: 10,
     speed: 100,
     exp: 25,
-    unitSize: 3.0,
+    unitSize: 4.0,
     frameCount: 1,
     behavior: 'dash',
     attackInterval: 0,     // 停頓時攻擊

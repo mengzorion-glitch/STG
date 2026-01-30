@@ -14,8 +14,8 @@ export const PLAYER_BULLET: BulletDef = {
   key: 'player-bullet',
   speed: 800,
   damage: 1,
-  size: 20,
-  unitSize: 0.4,  // 放大 1 倍
+  size: 10,
+  unitSize: 0,  // 不縮放，使用原始大小
   frameCount: 2,
 };
 
