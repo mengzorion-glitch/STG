@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Bullet } from '../entities/Bullet';
 import type { BulletOwner } from '../entities/Bullet';
-import { PLAYER_BULLET, MOB_BULLET } from '../data/BulletData';
+import { PLAYER_BULLET, MOB_BULLET, ULTIMATE_BULLET } from '../data/BulletData';
 import type { BulletDef } from '../data/BulletData';
 
 /**
@@ -61,9 +61,10 @@ export class BulletSystem {
     def: BulletDef,
     owner: BulletOwner,
     turnAfterUnits: number = 0,
-    turnAngle: number = 0
+    turnAngle: number = 0,
+    isUltimate: boolean = false
   ): Bullet {
-    const bullet = new Bullet(this.scene, x, y, angle, def, owner, turnAfterUnits, turnAngle);
+    const bullet = new Bullet(this.scene, x, y, angle, def, owner, turnAfterUnits, turnAngle, isUltimate);
     this.bullets.push(bullet);
     return bullet;
   }
@@ -122,10 +123,25 @@ export class BulletSystem {
   }
 
   /**
+   * V0.6.0: 發射大技能金色子彈
+   */
+  fireUltimate(x: number, y: number, angleDeg: number): Bullet {
+    const angleRad = Phaser.Math.DegToRad(angleDeg);
+    return this.fire(x, y, angleRad, ULTIMATE_BULLET, 'player', 0, 0, true);
+  }
+
+  /**
    * 取得玩家子彈
    */
   getPlayerBullets(): Bullet[] {
     return this.bullets.filter(b => b.getOwner() === 'player' && !b.isMarkedDestroyed());
+  }
+
+  /**
+   * V0.6.0: 取得大技能子彈
+   */
+  getUltimateBullets(): Bullet[] {
+    return this.bullets.filter(b => b.isUltimate() && !b.isMarkedDestroyed());
   }
 
   /**

@@ -27,3 +27,13 @@ export const MOB_BULLET: BulletDef = {
   unitSize: 0.3,
   frameCount: 1,
 };
+
+// V0.6.0: 大技能金色子彈
+export const ULTIMATE_BULLET: BulletDef = {
+  key: 'player-bullet',  // 使用同樣的圖片，會染成金色
+  speed: 1200,           // 高速
+  damage: 3,             // 3 點傷害
+  size: 12,
+  unitSize: 0,
+  frameCount: 2,
+};

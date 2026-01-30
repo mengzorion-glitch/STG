@@ -4,6 +4,8 @@ import { ParallaxBackground } from '../systems/ParallaxBackground';
 import { MonsterSystem } from '../systems/MonsterSystem';
 import { BulletSystem } from '../systems/BulletSystem';
 import { Player } from '../entities/Player';
+import { PlayerHUD } from '../ui/PlayerHUD';
+import { GameOverScreen } from '../ui/GameOverScreen';
 import { loadPlayerAssets } from '../utils/AssetLoader';
 import type { AnimationConfig } from '../utils/AssetLoader';
 
@@ -14,6 +16,7 @@ import type { AnimationConfig } from '../utils/AssetLoader';
  * V0.3.0: 角色系統
  * V0.4.0: 怪物系統
  * V0.5.0: 子彈系統
+ * V0.6.0: 技能數值系統 & UI
  */
 export class MainScene extends Phaser.Scene {
   // #region 輸入系統
@@ -47,8 +50,36 @@ export class MainScene extends Phaser.Scene {
   ];
   // #endregion 角色系統
 
+  // #region V0.6.0: 遊戲狀態
+  private hud!: PlayerHUD;
+  private survivalTime: number = 0;
+  private isGameOver: boolean = false;
+  private collisionCooldown: number = 0;
+  private readonly COLLISION_COOLDOWN = 500; // 碰撞無敵時間 (ms)
+
+  // 大技能旋轉掃射
+  private ultAngle: number = 0;
+  private ultFireTimer: number = 0;
+  private readonly ULT_FIRE_INTERVAL = 50;  // 發射間隔 (ms)
+  private readonly ULT_ANGLE_STEP = 10;      // 每輪旋轉角度
+  private readonly ULT_DIRECTIONS = 8;       // 8 方向
+  // #endregion V0.6.0
+
   constructor() {
     super('MainScene');
+  }
+
+  /**
+   * V0.6.0: 場景初始化 (重新開始時呼叫)
+   */
+  init(): void {
+    this.isLeftDown = false;
+    this.fireTimer = 0;
+    this.survivalTime = 0;
+    this.isGameOver = false;
+    this.collisionCooldown = 0;
+    this.ultAngle = 0;
+    this.ultFireTimer = 0;
   }
 
   preload(): void {
@@ -97,6 +128,9 @@ export class MainScene extends Phaser.Scene {
       }
     });
 
+    // V0.6.0: 初始化 HUD
+    this.hud = new PlayerHUD(this);
+
     this.setupInput();
     this.setupUI();
 
@@ -105,17 +139,41 @@ export class MainScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    // V0.6.0: 遊戲結束時停止更新
+    if (this.isGameOver) return;
+
+    // V0.6.0: 累計存活時間
+    this.survivalTime += delta / 1000;
+
     // V0.2.0: 更新背景捲動
     this.parallaxBg.update(delta);
 
     // V0.3.0: 更新角色
     this.player.update(delta);
 
+    // V0.6.0: 更新能量消耗
+    this.player.updateEnergy(delta);
+
     // V0.4.0: 更新怪物
     this.monsterSystem.update(delta);
 
     // V0.5.0: 更新子彈
     this.bulletSystem.update(delta);
+
+    // V0.6.0: 大技能旋轉掃射
+    if (this.player.isUltimateActive()) {
+      this.ultFireTimer += delta;
+      while (this.ultFireTimer >= this.ULT_FIRE_INTERVAL) {
+        this.ultFireTimer -= this.ULT_FIRE_INTERVAL;
+        const angleStep = 360 / this.ULT_DIRECTIONS;
+        for (let i = 0; i < this.ULT_DIRECTIONS; i++) {
+          const angle = this.ultAngle + angleStep * i;
+          this.bulletSystem.fireUltimate(this.player.x, this.player.y, angle);
+        }
+        this.ultAngle += this.ULT_ANGLE_STEP;
+        if (this.ultAngle >= 360) this.ultAngle -= 360;
+      }
+    }
 
     // V0.5.0: 左鍵按住 = 連續發射 + 攻擊狀態
     if (this.isLeftDown) {
@@ -133,8 +191,24 @@ export class MainScene extends Phaser.Scene {
       }
     }
 
-    // V0.5.0: 碰撞檢測
+    // V0.5.0 & V0.6.0: 碰撞檢測
     this.checkCollisions();
+
+    // V0.6.0: 怪物碰撞 (帶冷卻)
+    if (this.collisionCooldown > 0) {
+      this.collisionCooldown -= delta;
+    } else if (this.monsterSystem.checkPlayerCollision(this.player)) {
+      this.collisionCooldown = this.COLLISION_COOLDOWN;
+    }
+
+    // V0.6.0: 更新 HUD
+    this.hud.updateHP(this.player.getHP(), this.player.getMaxHP());
+    this.hud.updateEnergy(this.player.getEnergy(), this.player.getMaxEnergy());
+
+    // V0.6.0: 檢查死亡
+    if (this.player.isDead()) {
+      this.gameOver();
+    }
 
     // 更新除錯資訊
     this.updateDebugInfo(delta);
@@ -148,6 +222,22 @@ export class MainScene extends Phaser.Scene {
     const monsters = this.monsterSystem.getMonsters();
     const playerBullets = this.bulletSystem.getPlayerBullets();
     const monsterBullets = this.bulletSystem.getMonsterBullets();
+    const ultimateBullets = this.bulletSystem.getUltimateBullets();
+
+    // V0.6.0: 大技能金色子彈 vs 敵方彈幕 (打消)
+    for (const ultBullet of ultimateBullets) {
+      for (const mobBullet of monsterBullets) {
+        const dist = Phaser.Math.Distance.Between(
+          ultBullet.x, ultBullet.y,
+          mobBullet.x, mobBullet.y
+        );
+        const hitRadius = ultBullet.getRadius() + mobBullet.getRadius();
+        if (dist < hitRadius) {
+          // 金色子彈打消敵方彈幕，但金色子彈不消失
+          this.bulletSystem.removeBullet(mobBullet);
+        }
+      }
+    }
 
     // 玩家子彈 vs 怪物
     for (const bullet of playerBullets) {
@@ -158,6 +248,8 @@ export class MainScene extends Phaser.Scene {
         if (dist < hitRadius) {
           const killed = monster.takeDamage(bullet.getDamage());
           this.bulletSystem.removeBullet(bullet);
+          // V0.6.0: 擊中敵人 +1 能量
+          this.player.addEnergy(1);
           if (killed) {
             this.monsterSystem.removeMonster(monster);
           }
@@ -171,12 +263,19 @@ export class MainScene extends Phaser.Scene {
       const dist = Phaser.Math.Distance.Between(bullet.x, bullet.y, this.player.x, this.player.y);
       const hitRadius = bullet.getRadius() + this.player.getRadius();
       if (dist < hitRadius) {
-        this.player.takeDamage(bullet.getDamage());
+        this.player.takeBulletDamage();
         this.bulletSystem.removeBullet(bullet);
       }
     }
   }
   // #endregion 碰撞檢測
+
+  // #region V0.6.0: 遊戲結束
+  private gameOver(): void {
+    this.isGameOver = true;
+    new GameOverScreen(this, this.survivalTime);
+  }
+  // #endregion
 
   /**
    * 視窗大小變化時更新 UI 位置
@@ -207,6 +306,7 @@ export class MainScene extends Phaser.Scene {
 
     // 滑鼠/觸控：左鍵按下 = 移動 + 攻擊
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isGameOver) return;
       if (pointer.leftButtonDown()) {
         this.isLeftDown = true;
         this.player.setTargetPosition(new Phaser.Math.Vector2(pointer.x, pointer.y));
@@ -217,6 +317,7 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.isGameOver) return;
       if (this.isLeftDown && pointer.leftButtonDown()) {
         this.player.setTargetPosition(new Phaser.Math.Vector2(pointer.x, pointer.y));
       }
@@ -231,11 +332,13 @@ export class MainScene extends Phaser.Scene {
   }
 
   /**
-   * 右鍵施放技能
+   * V0.6.0: 右鍵施放大技能
    */
   private onRightClick(): void {
-    // TODO: V0.6.0 施放技能
-    console.log('Right click - Skill cast');
+    if (this.player.activateUlt()) {
+      this.ultAngle = 0;
+      this.ultFireTimer = 0;
+    }
   }
   // #endregion 輸入處理
 
@@ -249,8 +352,8 @@ export class MainScene extends Phaser.Scene {
     const lines = [
       `FPS: ${fps}`,
       `Size: ${Math.round(w)}x${Math.round(h)}`,
-      `Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`,
-      `State: ${this.player.getState()}`,
+      `HP: ${this.player.getHP()}/${this.player.getMaxHP()}`,
+      `Energy: ${Math.floor(this.player.getEnergy())}/${this.player.getMaxEnergy()}`,
       `Monsters: ${monsterCount}`,
       `Bullets: ${bulletCount}`,
     ];

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Monster } from '../entities/Monster';
 import type { AttackCallback } from '../entities/Monster';
+import { Player } from '../entities/Player';
 import { MONSTER_DEFS } from '../data/MonsterData';
 import type { MonsterDef } from '../data/MonsterData';
 
@@ -110,6 +111,28 @@ export class MonsterSystem {
    */
   setSpawnInterval(ms: number): void {
     this.spawnInterval = ms;
+  }
+
+  /**
+   * V0.6.0: 檢查玩家碰撞
+   * @returns true 如果發生碰撞
+   */
+  checkPlayerCollision(player: Player): boolean {
+    for (const monster of this.monsters) {
+      if (!monster.isAlive()) continue;
+
+      const dist = Phaser.Math.Distance.Between(
+        monster.x, monster.y,
+        player.x, player.y
+      );
+      const hitRadius = monster.getRadius() + player.getRadius();
+
+      if (dist < hitRadius) {
+        player.takeCollisionDamage();
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

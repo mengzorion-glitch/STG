@@ -7,6 +7,7 @@ export type BulletOwner = 'player' | 'monster';
 /**
  * 子彈實體
  * - 支援轉向系統 (飛行一段距離後修正角度)
+ * - V0.6.0: 支援大技能金色子彈
  */
 export class Bullet extends Phaser.GameObjects.Sprite {
   private def: BulletDef;
@@ -22,6 +23,10 @@ export class Bullet extends Phaser.GameObjects.Sprite {
   private turnAngle: number = 0;
   private hasTurned: boolean = false;
 
+  // V0.6.0: 大技能系統
+  private ultimate: boolean = false;
+  private breathTimer: number = 0;
+
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -30,7 +35,8 @@ export class Bullet extends Phaser.GameObjects.Sprite {
     def: BulletDef,
     owner: BulletOwner,
     turnAfterUnits: number = 0,
-    turnAngle: number = 0
+    turnAngle: number = 0,
+    isUltimate: boolean = false
   ) {
     super(scene, x, y, `${def.key}-0`);
     scene.add.existing(this);
@@ -41,6 +47,7 @@ export class Bullet extends Phaser.GameObjects.Sprite {
     this.startY = y;
     this.turnDistance = turnAfterUnits * UNIT_SIZE;
     this.turnAngle = turnAngle;
+    this.ultimate = isUltimate;
 
     // 計算速度向量
     this.velocityX = Math.cos(angle) * def.speed;
@@ -53,6 +60,11 @@ export class Bullet extends Phaser.GameObjects.Sprite {
     // 縮放 (unitSize > 0 才縮放)
     if (def.unitSize > 0) {
       this.setUnitSize(def.unitSize);
+    }
+
+    // V0.6.0: 大技能子彈染成淡金色
+    if (isUltimate) {
+      this.setTint(0xffee88);
     }
 
     this.initAnimation();
@@ -115,6 +127,13 @@ export class Bullet extends Phaser.GameObjects.Sprite {
         this.setRotation(this.turnAngle);
       }
     }
+
+    // V0.6.0: 大技能子彈呼吸閃動效果
+    if (this.ultimate) {
+      this.breathTimer += delta;
+      const alpha = 0.6 + 0.4 * Math.sin(this.breathTimer * 0.015);
+      this.setAlpha(alpha);
+    }
   }
 
   /**
@@ -150,5 +169,12 @@ export class Bullet extends Phaser.GameObjects.Sprite {
    */
   isMarkedDestroyed(): boolean {
     return this.isDestroyed;
+  }
+
+  /**
+   * V0.6.0: 是否為大技能子彈
+   */
+  isUltimate(): boolean {
+    return this.ultimate;
   }
 }
