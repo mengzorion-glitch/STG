@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { getUIAnchors } from '../config/GameConfig';
 import { ParallaxBackground } from '../systems/ParallaxBackground';
+import { MonsterSystem } from '../systems/MonsterSystem';
 import { Player } from '../entities/Player';
 import { loadPlayerAssets } from '../utils/AssetLoader';
 import type { AnimationConfig } from '../utils/AssetLoader';
@@ -10,6 +11,7 @@ import type { AnimationConfig } from '../utils/AssetLoader';
  * V0.1.0: 基礎框架與輸入系統
  * V0.2.0: 視差背景系統
  * V0.3.0: 角色系統
+ * V0.4.0: 怪物系統
  */
 export class MainScene extends Phaser.Scene {
   // #region 輸入系統
@@ -23,6 +25,10 @@ export class MainScene extends Phaser.Scene {
   // #region 背景系統
   private parallaxBg!: ParallaxBackground;
   // #endregion 背景系統
+
+  // #region 怪物系統
+  private monsterSystem!: MonsterSystem;
+  // #endregion 怪物系統
 
   // #region 角色系統
   private player!: Player;
@@ -44,6 +50,9 @@ export class MainScene extends Phaser.Scene {
 
     // V0.3.0: 載入角色圖片
     loadPlayerAssets(this, 'player', this.playerAnimConfig);
+
+    // V0.4.0: 載入怪物圖片
+    MonsterSystem.preload(this);
   }
 
   create(): void {
@@ -60,6 +69,9 @@ export class MainScene extends Phaser.Scene {
     this.player = new Player(this, 300, this.scale.height / 2);
     this.player.initAnimations(frameConfig);
 
+    // V0.4.0: 初始化怪物系統
+    this.monsterSystem = new MonsterSystem(this);
+
     this.setupInput();
     this.setupUI();
 
@@ -73,6 +85,9 @@ export class MainScene extends Phaser.Scene {
 
     // V0.3.0: 更新角色
     this.player.update(delta);
+
+    // V0.4.0: 更新怪物
+    this.monsterSystem.update(delta);
 
     // 左鍵按住 = 攻擊狀態，否則 = idle
     if (this.isLeftDown) {
@@ -153,12 +168,13 @@ export class MainScene extends Phaser.Scene {
     const fps = Math.round(1000 / delta);
     const w = this.scale.width;
     const h = this.scale.height;
+    const monsterCount = this.monsterSystem.getMonsters().length;
     const lines = [
       `FPS: ${fps}`,
       `Size: ${Math.round(w)}x${Math.round(h)}`,
       `Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`,
       `State: ${this.player.getState()}`,
-      `L-Click: ${this.isLeftDown ? 'Down' : 'Up'}`,
+      `Monsters: ${monsterCount}`,
     ];
     this.debugText.setText(lines.join('\n'));
   }

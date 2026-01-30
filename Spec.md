@@ -81,18 +81,18 @@
 
 ---
 
-## v0.4.0 - 怪物系統
+## v0.4.0 - 怪物系統 ✅
 > 📄 詳細步驟請參閱 [V0.4.0詳細步驟.md](./V0.4.0詳細步驟.md)
 
 ### 必要項目
-- [ ] 怪物資源結構 (public/monster/mob_{type}_{frame}.png)
-- [ ] MonsterData 定義檔 (src/data/MonsterData.ts)
-- [ ] Monster 類別 (src/entities/Monster.ts)
-- [ ] MonsterSystem 類別 (src/systems/MonsterSystem.ts)
-- [ ] 怪物大小：依類型 (small: 1, medium: 3 單位)
-- [ ] 怪物從右側生成，向左移動
-- [ ] 行為模式 (sine: S形移動, dash: 衝刺-停頓)
-- [ ] 視野外剔除
+- [x] 怪物資源結構 (public/monster/mob_{type}_{frame}.png)
+- [x] MonsterData 定義檔 (src/data/MonsterData.ts)
+- [x] Monster 類別 (src/entities/Monster.ts)
+- [x] MonsterSystem 類別 (src/systems/MonsterSystem.ts)
+- [x] 怪物大小：依類型 (small: 0.5, medium: 1.5 單位)
+- [x] 怪物從右側生成，向左移動
+- [x] 行為模式 (sine: S形移動, dash: 衝刺-停頓)
+- [x] 視野外剔除
 
 ---
 
