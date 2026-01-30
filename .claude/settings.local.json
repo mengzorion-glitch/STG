@@ -13,7 +13,9 @@
       "Bash(node scripts/generate-cover.js:*)",
       "Bash(git push:*)",
       "Bash(gh run list:*)",
-      "Bash(node scripts/generate-backgrounds.js:*)"
+      "Bash(node scripts/generate-backgrounds.js:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
