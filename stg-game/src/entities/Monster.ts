@@ -7,6 +7,9 @@ import type { MonsterDef } from '../data/MonsterData';
  * - 從畫面右側生成，向左移動
  * - 碰撞玩家造成傷害
  */
+// 攻擊回呼類型
+export type AttackCallback = (monster: Monster, type: 'circle' | 'fan') => void;
+
 export class Monster extends Phaser.GameObjects.Sprite {
   private def: MonsterDef;
   private currentHp: number;
@@ -19,6 +22,12 @@ export class Monster extends Phaser.GameObjects.Sprite {
   private targetY: number = 0;            // 目標Y (dash用)
   private dashPauseTimer: number = 0;     // 停頓計時 (dash用)
   private isDashing: boolean = false;     // 是否正在衝刺 (dash用)
+
+  // 攻擊系統
+  private attackTimer: number = 0;
+  private attackCallback: AttackCallback | null = null;
+  private dashFanWaveCount: number = 0;   // dash停頓時發射波數
+  private dashFanWaveTimer: number = 0;   // dash扇形波間隔計時
 
   constructor(scene: Phaser.Scene, x: number, y: number, def: MonsterDef) {
     super(scene, x, y, `mob-${def.type}-0`);
@@ -131,6 +140,15 @@ export class Monster extends Phaser.GameObjects.Sprite {
     const amplitude = UNIT_SIZE;
     const frequency = Math.PI; // 2秒一個週期
     this.y = this.baseY + Math.sin(this.elapsedTime * frequency) * amplitude;
+
+    // 攻擊: 每3秒噴出8發環形子彈
+    if (this.def.attackInterval > 0 && this.attackCallback) {
+      this.attackTimer += deltaSeconds * 1000;
+      if (this.attackTimer >= this.def.attackInterval) {
+        this.attackTimer = 0;
+        this.attackCallback(this, 'circle');
+      }
+    }
   }
 
   /**
@@ -140,9 +158,22 @@ export class Monster extends Phaser.GameObjects.Sprite {
     if (!this.isDashing) {
       // 停頓中
       this.dashPauseTimer -= deltaSeconds;
+
+      // 停頓時發射3波扇形子彈 (間隔0.2秒)
+      if (this.attackCallback && this.dashFanWaveCount < 3) {
+        this.dashFanWaveTimer += deltaSeconds;
+        if (this.dashFanWaveTimer >= 0.2) {
+          this.dashFanWaveTimer = 0;
+          this.dashFanWaveCount++;
+          this.attackCallback(this, 'fan');
+        }
+      }
+
       if (this.dashPauseTimer <= 0) {
         this.setNextDashTarget();
         this.isDashing = true;
+        this.dashFanWaveCount = 0;  // 重置波數
+        this.dashFanWaveTimer = 0;
       }
       return;
     }
@@ -156,6 +187,8 @@ export class Monster extends Phaser.GameObjects.Sprite {
       // 到達目標，開始停頓
       this.isDashing = false;
       this.dashPauseTimer = 1; // 停頓1秒
+      this.dashFanWaveCount = 0;
+      this.dashFanWaveTimer = 0;
       return;
     }
 
@@ -219,5 +252,19 @@ export class Monster extends Phaser.GameObjects.Sprite {
 
   getRadius(): number {
     return Math.min(this.displayWidth, this.displayHeight) / 2;
+  }
+
+  /**
+   * 設定攻擊回呼
+   */
+  setAttackCallback(callback: AttackCallback): void {
+    this.attackCallback = callback;
+  }
+
+  /**
+   * 是否正在停頓 (dash用)
+   */
+  isPausing(): boolean {
+    return this.def.behavior === 'dash' && !this.isDashing;
   }
 }

@@ -96,25 +96,25 @@
 
 ---
 
-## v0.5.0 - 子彈系統
+## v0.5.0 - 子彈系統 ✅
 > 📄 詳細步驟請參閱 [V0.5.0詳細步驟.md](./V0.5.0詳細步驟.md)
 
 ### 必要項目
-- [ ] 子彈資源結構 (player_bullet_{frame}.png, mob_bullet_{frame}.png)
-- [ ] BulletData 定義檔 (src/data/BulletData.ts)
-- [ ] Bullet 類別 (src/entities/Bullet.ts)
-- [ ] BulletSystem 類別 (src/systems/BulletSystem.ts)
-- [ ] 玩家彈幕 (7發主砲 60度散開 + 2發副砲 ±35度)
-- [ ] 主砲 2單位後漸進靠攏 (±30° → ±3°)
-- [ ] 副砲 4單位後修正 (±35° → ±15°)
-- [ ] 連射系統 (左鍵持續發射，間隔 0.2秒)
-- [ ] 攻擊動畫整合
-- [ ] 怪物攻擊 (小怪: 3秒環形8發, 中怪: 停頓時3波扇形)
-- [ ] 碰撞檢測 (圓形碰撞)
-- [ ] 擊中反饋 (閃紅 + 玩家hurt動畫)
-- [ ] 怪物血量 (小怪15發、中怪50發死亡)
-- [ ] 層級管理 (怪物子彈 > 玩家子彈)
-- [ ] 視野外剔除
+- [x] 子彈資源結構 (player_bullet_{frame}.png, mob_bullet_{frame}.png)
+- [x] BulletData 定義檔 (src/data/BulletData.ts)
+- [x] Bullet 類別 (src/entities/Bullet.ts)
+- [x] BulletSystem 類別 (src/systems/BulletSystem.ts)
+- [x] 玩家彈幕 (7發主砲 60度散開 + 2發副砲 ±35度)
+- [x] 主砲 2單位後漸進靠攏 (±30° → ±3°)
+- [x] 副砲 4單位後修正 (±35° → ±15°)
+- [x] 連射系統 (左鍵持續發射，間隔 0.2秒)
+- [x] 攻擊動畫整合
+- [x] 怪物攻擊 (小怪: 3秒環形8發, 中怪: 停頓時3波扇形)
+- [x] 碰撞檢測 (圓形碰撞)
+- [x] 擊中反饋 (閃紅 + 玩家hurt動畫)
+- [x] 怪物血量 (小怪15發、中怪50發死亡)
+- [x] 層級管理 (怪物子彈 > 玩家子彈)
+- [x] 視野外剔除
 
 ---
 
