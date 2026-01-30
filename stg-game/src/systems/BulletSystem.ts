@@ -70,18 +70,18 @@ export class BulletSystem {
   }
 
   /**
-   * 玩家彈幕：3發主砲
-   * - 主砲：20度散開 (-10~+10)，2單位後漸進靠攏到 (-1~+1)
+   * 玩家彈幕：N發主砲
+   * - 主砲：散開後漸進靠攏
+   * @param bulletCount 主砲數量
    */
-  firePlayerSpread(x: number, y: number): void {
-    const mainCount = 3;
+  firePlayerSpread(x: number, y: number, bulletCount: number = 3): void {
     const fireStep = 10;  // 發射時每發差 10 度
     const turnStep = 1;   // 轉向後每發差 1 度
 
-    for (let i = 0; i < mainCount; i++) {
-      const offset = i - Math.floor(mainCount / 2); // -1, 0, 1
-      const fireDeg = offset * fireStep;  // -10, 0, 10
-      const turnDeg = offset * turnStep;  //  -1, 0,  1
+    for (let i = 0; i < bulletCount; i++) {
+      const offset = i - Math.floor(bulletCount / 2);
+      const fireDeg = offset * fireStep;
+      const turnDeg = offset * turnStep;
 
       const fireRad = Phaser.Math.DegToRad(fireDeg);
       const turnRad = Phaser.Math.DegToRad(turnDeg);

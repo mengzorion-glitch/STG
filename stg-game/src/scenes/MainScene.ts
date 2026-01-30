@@ -3,6 +3,7 @@ import { getUIAnchors } from '../config/GameConfig';
 import { ParallaxBackground } from '../systems/ParallaxBackground';
 import { MonsterSystem } from '../systems/MonsterSystem';
 import { BulletSystem } from '../systems/BulletSystem';
+import { ItemSystem } from '../systems/ItemSystem';
 import { Player } from '../entities/Player';
 import { PlayerHUD } from '../ui/PlayerHUD';
 import { GameOverScreen } from '../ui/GameOverScreen';
@@ -40,6 +41,10 @@ export class MainScene extends Phaser.Scene {
   // #region 子彈系統
   private bulletSystem!: BulletSystem;
   // #endregion 子彈系統
+
+  // #region 道具系統
+  private itemSystem!: ItemSystem;
+  // #endregion 道具系統
 
   // #region 角色系統
   private player!: Player;
@@ -117,6 +122,9 @@ export class MainScene extends Phaser.Scene {
     // V0.5.0: 初始化子彈系統
     this.bulletSystem = new BulletSystem(this);
 
+    // 初始化道具系統
+    this.itemSystem = new ItemSystem(this);
+
     // 設定怪物攻擊回呼
     this.monsterSystem.setAttackCallback((monster, type) => {
       if (type === 'circle') {
@@ -160,6 +168,15 @@ export class MainScene extends Phaser.Scene {
     // V0.5.0: 更新子彈
     this.bulletSystem.update(delta);
 
+    // 更新道具
+    this.itemSystem.update(delta);
+
+    // 檢查道具拾取
+    const pickedItem = this.itemSystem.checkPlayerPickup(this.player);
+    if (pickedItem === 'bullet_up') {
+      this.player.addBulletCount(1);
+    }
+
     // V0.6.0: 大技能旋轉掃射
     if (this.player.isUltimateActive()) {
       this.ultFireTimer += delta;
@@ -181,7 +198,7 @@ export class MainScene extends Phaser.Scene {
       if (this.fireTimer >= this.FIRE_INTERVAL) {
         this.fireTimer = 0;
         // 從玩家前方發射
-        this.bulletSystem.firePlayerSpread(this.player.x + 30, this.player.y);
+        this.bulletSystem.firePlayerSpread(this.player.x + 30, this.player.y, this.player.getBulletCount());
         this.player.setPlayerState('attack');
       }
     } else {
@@ -246,12 +263,19 @@ export class MainScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(bullet.x, bullet.y, monster.x, monster.y);
         const hitRadius = bullet.getRadius() + monster.getRadius();
         if (dist < hitRadius) {
+          const monsterX = monster.x;
+          const monsterY = monster.y;
+          const monsterType = monster.getType();
           const killed = monster.takeDamage(bullet.getDamage());
           this.bulletSystem.removeBullet(bullet);
           // V0.6.0: 擊中敵人 +1 能量
           this.player.addEnergy(1);
           if (killed) {
             this.monsterSystem.removeMonster(monster);
+            // 中型怪物掉落道具
+            if (monsterType === 'medium') {
+              this.itemSystem.spawn(monsterX, monsterY, 'bullet_up');
+            }
           }
           break;
         }

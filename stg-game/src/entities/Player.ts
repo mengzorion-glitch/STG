@@ -28,6 +28,9 @@ export class Player extends Phaser.GameObjects.Sprite {
   private isUltActive: boolean = false;
   private energyDrainTimer: number = 0;
 
+  // 主砲彈數
+  private bulletCount: number = 3;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     // 使用第一張 idle 圖片作為初始材質
     super(scene, x, y, 'player-idle-0');
@@ -251,4 +254,14 @@ export class Player extends Phaser.GameObjects.Sprite {
   getState(): PlayerState {
     return this.currentState;
   }
+
+  // #region 主砲彈數
+  getBulletCount(): number {
+    return this.bulletCount;
+  }
+
+  addBulletCount(amount: number = 1): void {
+    this.bulletCount += amount;
+  }
+  // #endregion
 }
