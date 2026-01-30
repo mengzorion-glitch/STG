@@ -28,7 +28,7 @@ export const MONSTER_DEFS: MonsterDef[] = [
     damage: 5,
     speed: 150,
     exp: 10,
-    unitSize: 0.5,
+    unitSize: 1.0,
     frameCount: 1,
     behavior: 'sine',
     attackInterval: 3000,  // 每3秒攻擊一次
@@ -39,7 +39,7 @@ export const MONSTER_DEFS: MonsterDef[] = [
     damage: 10,
     speed: 100,
     exp: 25,
-    unitSize: 1.5,
+    unitSize: 3.0,
     frameCount: 1,
     behavior: 'dash',
     attackInterval: 0,     // 停頓時攻擊

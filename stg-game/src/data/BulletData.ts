@@ -14,8 +14,8 @@ export const PLAYER_BULLET: BulletDef = {
   key: 'player-bullet',
   speed: 800,
   damage: 1,
-  size: 10,
-  unitSize: 0,  // 不縮放，使用原始大小
+  size: 20,
+  unitSize: 0.4,  // 放大 1 倍
   frameCount: 2,
 };
 
@@ -23,8 +23,8 @@ export const MOB_BULLET: BulletDef = {
   key: 'mob-bullet',
   speed: 300,
   damage: 1,
-  size: 8,
-  unitSize: 0.3,
+  size: 16,
+  unitSize: 0.6,
   frameCount: 1,
 };
 
@@ -33,7 +33,7 @@ export const ULTIMATE_BULLET: BulletDef = {
   key: 'player-bullet',  // 使用同樣的圖片，會染成金色
   speed: 1200,           // 高速
   damage: 3,             // 3 點傷害
-  size: 12,
-  unitSize: 0,
+  size: 24,
+  unitSize: 0.5,         // 放大 1 倍
   frameCount: 2,
 };
