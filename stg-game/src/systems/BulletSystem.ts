@@ -70,30 +70,24 @@ export class BulletSystem {
   }
 
   /**
-   * 玩家彈幕：7發主砲 + 2發副砲
-   * - 主砲：60度散開 (-30~+30)，2單位後漸進靠攏到 (-3~+3)
-   * - 副砲：±35度，4單位後修正到 ±15度
+   * 玩家彈幕：3發主砲
+   * - 主砲：20度散開 (-10~+10)，2單位後漸進靠攏到 (-1~+1)
    */
   firePlayerSpread(x: number, y: number): void {
-    // 主砲：7發
-    const mainCount = 7;
+    const mainCount = 3;
     const fireStep = 10;  // 發射時每發差 10 度
     const turnStep = 1;   // 轉向後每發差 1 度
 
     for (let i = 0; i < mainCount; i++) {
-      const offset = i - Math.floor(mainCount / 2); // -3, -2, -1, 0, 1, 2, 3
-      const fireDeg = offset * fireStep;  // -30, -20, -10, 0, 10, 20, 30
-      const turnDeg = offset * turnStep;  //  -3,  -2,  -1, 0,  1,  2,  3
+      const offset = i - Math.floor(mainCount / 2); // -1, 0, 1
+      const fireDeg = offset * fireStep;  // -10, 0, 10
+      const turnDeg = offset * turnStep;  //  -1, 0,  1
 
       const fireRad = Phaser.Math.DegToRad(fireDeg);
       const turnRad = Phaser.Math.DegToRad(turnDeg);
 
       this.fire(x, y, fireRad, PLAYER_BULLET, 'player', 2, turnRad);
     }
-
-    // 副砲：±35度，4單位後修正到 ±15度
-    this.fire(x, y, Phaser.Math.DegToRad(35), PLAYER_BULLET, 'player', 4, Phaser.Math.DegToRad(15));
-    this.fire(x, y, Phaser.Math.DegToRad(-35), PLAYER_BULLET, 'player', 4, Phaser.Math.DegToRad(-15));
   }
 
   /**
