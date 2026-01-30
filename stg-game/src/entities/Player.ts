@@ -133,10 +133,6 @@ export class Player extends Phaser.GameObjects.Sprite {
    * 受到傷害
    */
   takeDamage(_amount: number): void {
-    // 閃紅效果
-    this.setTint(0xff0000);
-    this.scene.time.delayedCall(100, () => this.clearTint());
-
     // 播放受傷動畫
     this.setPlayerState('hurt');
   }
