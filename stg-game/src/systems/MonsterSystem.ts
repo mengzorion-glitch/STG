@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Monster } from '../entities/Monster';
+import type { AttackCallback } from '../entities/Monster';
 import { MONSTER_DEFS } from '../data/MonsterData';
 import type { MonsterDef } from '../data/MonsterData';
 
@@ -11,9 +12,17 @@ export class MonsterSystem {
   private monsters: Monster[] = [];
   private spawnTimer: number = 0;
   private spawnInterval: number = 2000; // 生成間隔 (ms)
+  private attackCallback: AttackCallback | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
+  }
+
+  /**
+   * 設定怪物攻擊回呼
+   */
+  setAttackCallback(callback: AttackCallback): void {
+    this.attackCallback = callback;
   }
 
   /**
@@ -72,6 +81,9 @@ export class MonsterSystem {
     const y = Phaser.Math.Between(100, screenH - 100);
 
     const monster = new Monster(this.scene, x, y, def);
+    if (this.attackCallback) {
+      monster.setAttackCallback(this.attackCallback);
+    }
     this.monsters.push(monster);
     return monster;
   }

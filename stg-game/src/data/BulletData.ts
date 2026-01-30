@@ -1,0 +1,29 @@
+/**
+ * 子彈定義
+ */
+export interface BulletDef {
+  key: string;        // 圖片key前綴
+  speed: number;      // 速度 (px/s)
+  damage: number;     // 傷害
+  size: number;       // 碰撞半徑
+  unitSize: number;   // 單位大小 (0=不縮放)
+  frameCount: number; // 動畫幀數
+}
+
+export const PLAYER_BULLET: BulletDef = {
+  key: 'player-bullet',
+  speed: 800,
+  damage: 1,
+  size: 10,
+  unitSize: 0,  // 不縮放，使用原始大小
+  frameCount: 2,
+};
+
+export const MOB_BULLET: BulletDef = {
+  key: 'mob-bullet',
+  speed: 300,
+  damage: 1,
+  size: 8,
+  unitSize: 0.3,
+  frameCount: 1,
+};
