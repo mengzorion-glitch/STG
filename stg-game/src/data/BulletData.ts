@@ -33,7 +33,7 @@ export const ULTIMATE_BULLET: BulletDef = {
   key: 'player-bullet',  // 使用同樣的圖片，會染成金色
   speed: 1200,           // 高速
   damage: 3,             // 3 點傷害
-  size: 24,
-  unitSize: 0.5,         // 放大 1 倍
+  size: 12,
+  unitSize: 0,           // 不縮放，使用原始大小
   frameCount: 2,
 };
